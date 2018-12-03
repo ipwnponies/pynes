@@ -1,0 +1,4 @@
+flake8
+pre-commit
+pylint
+requirements-tools
