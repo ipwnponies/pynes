@@ -1,3 +1,5 @@
+from unittest import mock
+
 from pynes import cpu
 from testing.util import named_parametrize
 
@@ -45,41 +47,14 @@ class TestAddWithCarryImmediate:
 
 
 class TestAddWithCarryAbsolute:
-    @staticmethod
-    @named_parametrize(('accumulator_state', 'expected'), [('Accumulator unset', 0, 5), ('Accumulator set', 5, 10)])
-    def test_absolute(accumulator_state, expected):
-        test_cpu = cpu.Cpu()
-        test_cpu.accumulator = accumulator_state
+    """After memory address is accessed, this operation is identical to adding in immediate addressing."""
 
-        # Intial memory values
+    @staticmethod
+    def test_absolute():
+        test_cpu = cpu.Cpu()
         test_cpu.memory = bytearray(b'\x00\x00\x05\x00')
 
-        test_cpu.add_with_carry(cpu.AddressingMode.absolute, 2)
+        with mock.patch.object(test_cpu, '_add_with_carry_immediate') as mock_add:
+            test_cpu.add_with_carry(cpu.AddressingMode.absolute, 2)
 
-        assert test_cpu.accumulator == expected
-        assert not test_cpu.processor_status_carry
-
-    @staticmethod
-    def test_overflow():
-        """Test that carry bit is set when add operation overflows."""
-        test_cpu = cpu.Cpu()
-        test_cpu.accumulator = 10
-        test_cpu.memory = bytearray(b'\x00\x00\x08\x00')
-
-        test_cpu.add_with_carry(cpu.AddressingMode.absolute, 2)
-
-        assert test_cpu.accumulator == 2
-        assert test_cpu.processor_status_carry
-
-    @staticmethod
-    @named_parametrize(('accumulator_state', 'value'), [('All zero values', 0, 0), ('Result is 16 (overflow)', 10, 6)])
-    def test_zero_flag(accumulator_state, value):
-        assert (accumulator_state + value) % 16 == 0, 'Test code assertion, test inputs must only for result == 0'
-
-        test_cpu = cpu.Cpu()
-        test_cpu.accumulator = accumulator_state
-        test_cpu.memory = bytearray(4)
-        test_cpu.memory[2] = value
-        test_cpu.add_with_carry(cpu.AddressingMode.absolute, 2)
-
-        assert test_cpu.processor_status_zero
+        assert mock_add.called_with(5), 'Memory is not accessed in the right place.'
