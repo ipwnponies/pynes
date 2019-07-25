@@ -1,13 +1,13 @@
 import argparse
 
 
-def argparser():
+def argparser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument('rom', type=argparse.FileType('rb'))
     return parser
 
 
-def main():
+def main() -> None:
     parser = argparser()
     parser.parse_args()
 

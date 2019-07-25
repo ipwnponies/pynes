@@ -6,6 +6,8 @@ __pycache__/
 *$py.class
 
 /.coverage
+/.testmondata
+/.tmontmp
 
-# virtualenv
 /venv/
+/.mypy_cache/
