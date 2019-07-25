@@ -8,13 +8,19 @@ help: ## Print help
 
 .PHONY: venv
 venv:  ## Create virtualenv
-	bin/venv-update venv= -p python3 venv install= -r requirements-dev.txt -r requirements.txt
-	venv/bin/pre-commit autoupdate
+	bin/venv-update \
+		venv= -p python3 venv \
+		install= -r requirements-dev.txt -r requirements.txt \
+		bootstrap-deps= -r requirements-bootstrap.txt \
+		>/dev/null
 	venv/bin/pre-commit install
 
-.PHONY: run
-run: venv ## Run script
-	venv/bin/python playlist_updates.py
+.PHONY: test
+test: venv ## Run script
+	venv/bin/coverage run -m pytest --strict tests/
+	venv/bin/coverage report --fail-under 100 --omit 'tests/*'
+	venv/bin/coverage report --fail-under 100 --include 'tests/*'
+	venv/bin/pre-commit run --all-files
 
 .PHONY: clean
 clean: ## Clean working directory

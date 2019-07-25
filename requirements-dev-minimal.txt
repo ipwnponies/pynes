@@ -1,4 +1,7 @@
+black
+coverage
 flake8
 pre-commit
 pylint
+pytest
 requirements-tools
