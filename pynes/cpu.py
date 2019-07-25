@@ -1,5 +1,8 @@
 import enum
 
+MAX_SIGNED_VALUE = 2 ** 7
+MAX_UNSIGNED_VALUE = 2 ** 8
+
 
 class AddressingMode(enum.Enum):
     immediate = enum.auto()
@@ -37,9 +40,9 @@ class Cpu:
 
     def _add_with_carry_immediate(self, value: int) -> None:
         result = self.accumulator + value
-        if result > 15:
+        if result >= MAX_SIGNED_VALUE:
             self.processor_status_carry = True
-            result = result % 16
+            result = result % MAX_SIGNED_VALUE
 
         if result == 0:
             self.processor_status_zero = True

@@ -12,6 +12,7 @@ class TestAddWithCarryImmediate:
             ('Immediate value', 0, 10, 10),
             ('Accumulator set', 5, 0, 5),
             ('Accumulator set and immediate value', 5, 10, 15),
+            ('Upper bound test', 100, 27, 127),
         ],
     )
     def test_adding(accumulator_state, immediate, expected):
@@ -23,21 +24,23 @@ class TestAddWithCarryImmediate:
         assert not test_cpu.processor_status_carry
 
     @staticmethod
-    def test_overflow():
+    def test_carry():
         """Test that carry bit is set when add operation overflows."""
         test_cpu = cpu.Cpu()
-        test_cpu.accumulator = 10
-        test_cpu.add_with_carry(cpu.AddressingMode.immediate, 8)
+        test_cpu.accumulator = 100
+        test_cpu.add_with_carry(cpu.AddressingMode.immediate, 30)
 
         assert test_cpu.accumulator == 2
         assert test_cpu.processor_status_carry
 
     @staticmethod
     @named_parametrize(
-        ('accumulator_state', 'immediate'), [('All zero values', 0, 0), ('Result is 16 (overflow)', 10, 6)]
+        ('accumulator_state', 'immediate'), [('All zero values', 0, 0), ('Result is 128 (overflow)', 100, 28)]
     )
     def test_zero_flag(accumulator_state, immediate):
-        assert (accumulator_state + immediate) % 16 == 0, 'Test code assertion, test inputs must only for result == 0'
+        assert (accumulator_state + immediate) % (
+            2 ** 7
+        ) == 0, 'Test code assertion, test inputs must only for result == 0'
 
         test_cpu = cpu.Cpu()
         test_cpu.accumulator = accumulator_state
