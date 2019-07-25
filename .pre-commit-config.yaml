@@ -1,13 +1,15 @@
 ---
+default_language_version:
+  python: python3.7
 exclude: ^bin/
 fail_fast: true
 repos:
 - repo: https://github.com/pre-commit/mirrors-autopep8
-  rev: v1.4.3
+  rev: v1.4.4
   hooks:
   - id: autopep8
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v2.0.0
+  rev: v2.2.3
   hooks:
   - id: check-added-large-files
   - id: check-byte-order-marker
@@ -42,10 +44,10 @@ repos:
   - id: sort-simple-yaml
   - id: trailing-whitespace
 - repo: https://github.com/asottile/reorder_python_imports
-  rev: v1.3.4
+  rev: v1.6.1
   hooks:
   - id: reorder-python-imports
-- repo: https://github.com/asottile/add-trailing-comma
-  rev: v0.7.1
+- repo: https://github.com/python/black
+  rev: 19.3b0
   hooks:
-  - id: add-trailing-comma
+  - id: black
