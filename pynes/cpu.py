@@ -1,9 +1,9 @@
 import enum
-from typing import Any
 
 
 class AddressingMode(enum.Enum):
     immediate = enum.auto()
+    absolute = enum.auto()
 
 
 class Cpu:
@@ -27,11 +27,21 @@ class Cpu:
         self.processor_status_break_command: bool = False
         self.processor_status_overflow: bool = False
         self.processor_status_negative: bool = False
+        self.memory: bytearray = bytearray()
 
-    def add_with_carry(self, addressing_mode: enum.Enum, data: Any) -> None:
+    def add_with_carry(self, addressing_mode: enum.Enum, data: int) -> None:
         if addressing_mode == AddressingMode.immediate:
             self._add_with_carry_immediate(data)
+        elif addressing_mode == AddressingMode.absolute:
+            self._add_with_carry_absolute(data)
 
     def _add_with_carry_immediate(self, value: int) -> None:
         result = self.accumulator + value
         self.accumulator = result
+
+    def _add_with_carry_absolute(self, value: int) -> None:
+        result = self.accumulator + self.read_from_memory(value)
+        self.accumulator = result
+
+    def read_from_memory(self, address: int) -> int:
+        return self.memory[address]
