@@ -30,6 +30,19 @@ class TestAddWithCarryImmediate:
         assert test_cpu.accumulator == 2
         assert test_cpu.processor_status_carry
 
+    @staticmethod
+    @named_parametrize(
+        ('accumulator_state', 'immediate'), [('All zero values', 0, 0), ('Result is 16 (overflow)', 10, 6)]
+    )
+    def test_zero_flag(accumulator_state, immediate):
+        assert (accumulator_state + immediate) % 16 == 0, 'Test code assertion, test inputs must only for result == 0'
+
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+        test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
+
+        assert test_cpu.processor_status_zero
+
 
 class TestAddWithCarryAbsolute:
     @staticmethod
@@ -57,3 +70,16 @@ class TestAddWithCarryAbsolute:
 
         assert test_cpu.accumulator == 2
         assert test_cpu.processor_status_carry
+
+    @staticmethod
+    @named_parametrize(('accumulator_state', 'value'), [('All zero values', 0, 0), ('Result is 16 (overflow)', 10, 6)])
+    def test_zero_flag(accumulator_state, value):
+        assert (accumulator_state + value) % 16 == 0, 'Test code assertion, test inputs must only for result == 0'
+
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+        test_cpu.memory = bytearray(4)
+        test_cpu.memory[2] = value
+        test_cpu.add_with_carry(cpu.AddressingMode.absolute, 2)
+
+        assert test_cpu.processor_status_zero

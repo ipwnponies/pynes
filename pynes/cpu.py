@@ -40,6 +40,9 @@ class Cpu:
         if result > 15:
             self.processor_status_carry = True
             result = result % 16
+
+        if result == 0:
+            self.processor_status_zero = True
         self.accumulator = result
 
     def _add_with_carry_absolute(self, value: int) -> None:
@@ -47,6 +50,8 @@ class Cpu:
         if result > 15:
             self.processor_status_carry = True
             result = result % 16
+        if result == 0:
+            self.processor_status_zero = True
         self.accumulator = result
 
     def read_from_memory(self, address: int) -> int:
