@@ -2,7 +2,6 @@
 default_language_version:
   python: python3.7
 exclude: ^bin/
-fail_fast: true
 repos:
 - repo: https://github.com/pre-commit/mirrors-autopep8
   rev: v1.4.4
