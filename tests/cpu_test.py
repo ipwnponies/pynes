@@ -235,6 +235,17 @@ class TestAsl:
         assert test_cpu.accumulator == expected
 
     @staticmethod
+    @named_parametrize(('accumulator_state', 'expected'), [('No overflow', 0x0F, False), ('Overflow', 0xFF, True)])
+    def test_carry_flag(accumulator_state, expected):
+        """Test that result is zero."""
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+
+        test_cpu.asl(cpu.AddressingMode.accumulator)
+
+        assert test_cpu.processor_status_carry == expected
+
+    @staticmethod
     @named_parametrize(
         ('accumulator_state', 'expected'), [('Zero', 0x0, True), ('Non-zero', 0xFF, False), ('0x80', 0x80, True)]
     )

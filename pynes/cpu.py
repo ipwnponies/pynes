@@ -132,6 +132,9 @@ class Cpu:
         arg = self.accumulator
         result = arg << 1
 
+        # Check the previous MSB for carry value
+        self.processor_status_carry = bool(result & 0x100)
+
         # Check the MSB for negative value
         self.processor_status_negative = bool(result & 0x80)
 
