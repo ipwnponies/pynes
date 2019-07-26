@@ -116,10 +116,6 @@ class TestAddWithCarryImmediate:
         assert test_cpu.processor_status_decimal_mode == flag_state
         assert test_cpu.processor_status_break_command == flag_state
 
-
-class TestAddWithCarryAbsolute:
-    """After memory address is accessed, this operation is identical to adding in immediate addressing."""
-
     @staticmethod
     def test_absolute():
         """Test that absolute addressing gets the value from memory, then performs same addition as immediate."""
@@ -130,6 +126,16 @@ class TestAddWithCarryAbsolute:
             test_cpu.add_with_carry(cpu.AddressingMode.absolute, 2)
 
         assert mock_add.called_with(5), 'Memory is not accessed in the right place.'
+
+    @staticmethod
+    def test_zero_page():
+        """Test that zero page addressing is alias for absolute addressing."""
+        test_cpu = cpu.Cpu()
+
+        with mock.patch.object(test_cpu, '_add_with_carry_absolute') as mock_add:
+            test_cpu.add_with_carry(cpu.AddressingMode.zero_page, 2)
+
+        assert mock_add.called, 'zero_page addressing mode should be identical to absolute mode'
 
 
 class TestAnd:
@@ -219,6 +225,16 @@ class TestAnd:
         assert test_cpu.processor_status_decimal_mode == flag_state
         assert test_cpu.processor_status_break_command == flag_state
         assert test_cpu.processor_status_overflow == flag_state
+
+    @staticmethod
+    def test_zero_page():
+        """Test that zero page addressing is alias for absolute addressing."""
+        test_cpu = cpu.Cpu()
+
+        with mock.patch.object(test_cpu, '_and_absolute') as mock_and:
+            test_cpu._and(cpu.AddressingMode.zero_page, 2)
+
+        assert mock_and.called, 'zero_page addressing mode should be identical to absolute mode'
 
 
 class TestAsl:
