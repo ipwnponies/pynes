@@ -24,14 +24,41 @@ class TestAddWithCarryImmediate:
         assert not test_cpu.processor_status_carry
 
     @staticmethod
-    def test_carry():
+    @named_parametrize(
+        ('accumulator_state', 'immediate', 'expected'),
+        [
+            ('Carry and overflow', 0xF0, 0xF0, True),
+            ('Carry but no overflow', 0xFF, 0xFF, True),
+            ('No carry or overflow', 0x0F, 0x0F, False),
+            ('No carry but has overflow', 0b1000000, 0b1000000, False),
+        ],
+    )
+    def test_carry(accumulator_state, immediate, expected):
         """Test that carry bit is set when add operation overflows."""
         test_cpu = cpu.Cpu()
-        test_cpu.accumulator = 100
-        test_cpu.add_with_carry(cpu.AddressingMode.immediate, 30)
+        test_cpu.accumulator = accumulator_state
+        test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
 
-        assert test_cpu.accumulator == 2
-        assert test_cpu.processor_status_carry
+        assert test_cpu.processor_status_carry == expected
+
+    @staticmethod
+    @named_parametrize(
+        ('accumulator_state', 'immediate', 'expected'),
+        [
+            ('Carry and overflow', 0b10000000, 0b10000000, True),
+            ('Carry but no overflow', 0xFF, 0xFF, False),
+            ('No carry or overflow', 0x01, 0x01, False),
+            ('No carry but has overflow', 0b01000000, 0b01000000, True),
+        ],
+    )
+    def test_overflow(accumulator_state, immediate, expected):
+        """Test that carry bit is set when add operation overflows."""
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+
+        test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
+
+        assert test_cpu.processor_status_overflow == expected
 
     @staticmethod
     @named_parametrize(
