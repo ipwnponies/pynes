@@ -188,3 +188,34 @@ class TestAnd:
         test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
 
         assert test_cpu.processor_status_negative == expected
+
+    @staticmethod
+    @named_parametrize(
+        ('accumulator_state', 'immediate'),
+        [
+            ('Zero', 0x0, 0x0),
+            ('Max values', 0xFF, 0xFF),
+            ('Both positive', 0x0F, 0x73),
+            ('Both negative', 0xF0, 0xD3),
+            ('Potential singed overflow', 0b01000000, 0b01000000),
+        ],
+    )
+    @pytest.mark.parametrize(('flag_state'), [(True,), (False,)])
+    def test_unaffected_flag(accumulator_state, immediate, flag_state):
+        """Test that other flags are unchanged."""
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+
+        test_cpu.processor_status_carry = flag_state
+        test_cpu.processor_status_interrupt_disable = flag_state
+        test_cpu.processor_status_decimal_mode = flag_state
+        test_cpu.processor_status_break_command = flag_state
+        test_cpu.processor_status_overflow = flag_state
+
+        test_cpu._and(cpu.AddressingMode.immediate, immediate)
+
+        assert test_cpu.processor_status_carry == flag_state
+        assert test_cpu.processor_status_interrupt_disable == flag_state
+        assert test_cpu.processor_status_decimal_mode == flag_state
+        assert test_cpu.processor_status_break_command == flag_state
+        assert test_cpu.processor_status_overflow == flag_state
