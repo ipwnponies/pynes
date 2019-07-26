@@ -132,6 +132,9 @@ class Cpu:
         arg = self.accumulator
         result = arg << 1
 
+        # Check the MSB for negative value
+        self.processor_status_negative = bool(result & 0x80)
+
         # Result is only 8 bit, must modulo it to fit register
         self.accumulator = result % MAX_UNSIGNED_VALUE
 

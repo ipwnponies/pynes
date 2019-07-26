@@ -248,6 +248,25 @@ class TestAsl:
         assert test_cpu.processor_status_zero == expected
 
     @staticmethod
+    @named_parametrize(
+        ('accumulator_state', 'expected'),
+        [
+            ('Positive->Positive', 0x0F, False),
+            ('Positive->Negative', 0x70, True),
+            ('Negative->Negative', 0xF0, True),
+            ('Negative->Positive', 0x81, False),
+        ],
+    )
+    def test_negative_flag(accumulator_state, expected):
+        """Test that negative bit is set if the result is negative."""
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+
+        test_cpu.asl(cpu.AddressingMode.accumulator)
+
+        assert test_cpu.processor_status_negative == expected
+
+    @staticmethod
     @named_parametrize(('accumulator_state'), [('Zero', 0x0, 0x0), ('Max', 0xFF, 0xFE), ('Random', 0x11, 0x22)])
     @pytest.mark.parametrize(('flag_state'), [(True,), (False,)])
     def test_unaffected_flag(accumulator_state, flag_state):
