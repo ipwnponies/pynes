@@ -233,3 +233,23 @@ class TestAsl:
         test_cpu.asl(cpu.AddressingMode.accumulator)
 
         assert test_cpu.accumulator == expected
+
+    @staticmethod
+    @named_parametrize(('accumulator_state'), [('Zero', 0x0, 0x0), ('Max', 0xFF, 0xFE), ('Random', 0x11, 0x22)])
+    @pytest.mark.parametrize(('flag_state'), [(True,), (False,)])
+    def test_unaffected_flag(accumulator_state, flag_state):
+        """Test that other flags are unchanged."""
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+
+        test_cpu.processor_status_interrupt_disable = flag_state
+        test_cpu.processor_status_decimal_mode = flag_state
+        test_cpu.processor_status_break_command = flag_state
+        test_cpu.processor_status_overflow = flag_state
+
+        test_cpu.asl(cpu.AddressingMode.accumulator)
+
+        assert test_cpu.processor_status_interrupt_disable == flag_state
+        assert test_cpu.processor_status_decimal_mode == flag_state
+        assert test_cpu.processor_status_break_command == flag_state
+        assert test_cpu.processor_status_overflow == flag_state
