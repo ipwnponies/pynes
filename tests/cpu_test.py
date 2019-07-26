@@ -67,13 +67,13 @@ class TestAddWithCarryImmediate:
 
     @staticmethod
     @named_parametrize(
-        ('accumulator_state', 'immediate'), [('All zero values', 0, 0), ('Result is 128 (overflow)', 200, 56)]
+        ('accumulator_state', 'immediate'), [('All zero values', 0, 0), ('Result is 256 (overflow)', 200, 56)]
     )
     def test_zero_flag(accumulator_state, immediate):
         """Test that result is zero."""
-        assert (accumulator_state + immediate) % (
-            2 ** 7
-        ) == 0, 'Test code assertion, test inputs must only for result == 0'
+        assert (
+            accumulator_state + immediate
+        ) % cpu.MAX_UNSIGNED_VALUE == 0, 'Test code assertion, test inputs must only for result == 0'
 
         test_cpu = cpu.Cpu()
         test_cpu.accumulator = accumulator_state
@@ -156,3 +156,35 @@ class TestAnd:
             test_cpu._and(cpu.AddressingMode.absolute, 2)
 
         assert mock_and.called_with(5), 'Memory is not accessed in the right place.'
+
+    @staticmethod
+    @named_parametrize(
+        ('accumulator_state', 'immediate', 'expected'),
+        [('Some matching values', 0x0F, 0x02, False), ('No matching values', 0xF0, 0x02, True)],
+    )
+    def test_zero_flag(accumulator_state, immediate, expected):
+        """Test that result is zero."""
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+        test_cpu._and(cpu.AddressingMode.immediate, immediate)
+
+        assert test_cpu.processor_status_zero == expected
+
+    @staticmethod
+    @named_parametrize(
+        ('accumulator_state', 'immediate', 'expected'),
+        [
+            ('Both positive', 0x0F, 0x0F, False),
+            ('Mixed1', 0xF0, 0x70, False),
+            ('Mixed2', 0x70, 0xF0, False),
+            ('both negative', 0xF0, 0xF0, True),
+        ],
+    )
+    def test_negative_flag(accumulator_state, immediate, expected):
+        """Test that negative bit is set if the result is negative."""
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+
+        test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
+
+        assert test_cpu.processor_status_negative == expected
