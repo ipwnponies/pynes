@@ -16,6 +16,7 @@ class TestAddWithCarryImmediate:
         ],
     )
     def test_adding(accumulator_state, immediate, expected):
+        """Test basic adding functionality between accumulator and immediate value."""
         test_cpu = cpu.Cpu()
         test_cpu.accumulator = accumulator_state
         test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
@@ -52,7 +53,9 @@ class TestAddWithCarryImmediate:
         ],
     )
     def test_overflow(accumulator_state, immediate, expected):
-        """Test that carry bit is set when add operation overflows."""
+        """Test that overflow bit is set when add operation overflows.
+
+        This is only meaningful if the inputs were intended to be signed values."""
         test_cpu = cpu.Cpu()
         test_cpu.accumulator = accumulator_state
 
@@ -65,6 +68,7 @@ class TestAddWithCarryImmediate:
         ('accumulator_state', 'immediate'), [('All zero values', 0, 0), ('Result is 128 (overflow)', 100, 28)]
     )
     def test_zero_flag(accumulator_state, immediate):
+        """Test that result is zero."""
         assert (accumulator_state + immediate) % (
             2 ** 7
         ) == 0, 'Test code assertion, test inputs must only for result == 0'
@@ -75,12 +79,27 @@ class TestAddWithCarryImmediate:
 
         assert test_cpu.processor_status_zero
 
+    @staticmethod
+    @named_parametrize(
+        ('accumulator_state', 'immediate', 'expected'),
+        [('Zero', 0, 0, False), ('Postive', 1, 1, False), ('Negative', 0xFF, 0xFF, True)],
+    )
+    def test_negative_flag(accumulator_state, immediate, expected):
+        """Test that negative bit is set if the result is negative."""
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+
+        test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
+
+        assert test_cpu.processor_status_negative == expected
+
 
 class TestAddWithCarryAbsolute:
     """After memory address is accessed, this operation is identical to adding in immediate addressing."""
 
     @staticmethod
     def test_absolute():
+        """Test that absolute addressing gets the value from memory, then performs same addition as immediate."""
         test_cpu = cpu.Cpu()
         test_cpu.memory = bytearray(b'\x00\x00\x05\x00')
 

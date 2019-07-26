@@ -55,6 +55,9 @@ class Cpu:
         # bit of result is different, then there is overflow
         self.processor_status_overflow = bool((arg1_sign_bit & value_sign_bit) ^ result_sign_bit)
 
+        # Check the MSB for negative value
+        self.processor_status_negative = bool(result & 0x80)
+
         # Result is only 8 bit, must modulo it to fit register
         self.accumulator = result % MAX_SIGNED_VALUE
 
