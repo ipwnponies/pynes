@@ -14,7 +14,7 @@ class TestAddWithCarryImmediate:
             ('Immediate value', 0, 10, 10),
             ('Accumulator set', 5, 0, 5),
             ('Accumulator set and immediate value', 5, 10, 15),
-            ('Upper bound test', 100, 27, 127),
+            ('Upper bound test', 200, 55, 255),
         ],
     )
     def test_adding(accumulator_state, immediate, expected):
@@ -67,7 +67,7 @@ class TestAddWithCarryImmediate:
 
     @staticmethod
     @named_parametrize(
-        ('accumulator_state', 'immediate'), [('All zero values', 0, 0), ('Result is 128 (overflow)', 100, 28)]
+        ('accumulator_state', 'immediate'), [('All zero values', 0, 0), ('Result is 128 (overflow)', 200, 56)]
     )
     def test_zero_flag(accumulator_state, immediate):
         """Test that result is zero."""
@@ -130,3 +130,29 @@ class TestAddWithCarryAbsolute:
             test_cpu.add_with_carry(cpu.AddressingMode.absolute, 2)
 
         assert mock_add.called_with(5), 'Memory is not accessed in the right place.'
+
+
+class TestAnd:
+    @staticmethod
+    @named_parametrize(
+        ('accumulator_state', 'immediate', 'expected'),
+        [('Match', 0xFF, 0x80, 0x80), ('No match', 0x00, 0x80, 0x00), ('Negative', 0xDD, 0xF0, 0xD0)],
+    )
+    def test_immediate(accumulator_state, immediate, expected):
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+
+        test_cpu._and(cpu.AddressingMode.immediate, immediate)
+
+        assert test_cpu.accumulator == expected
+
+    @staticmethod
+    def test_absolute():
+        """Test that absolute addressing gets the value from memory, then performs same addition as immediate."""
+        test_cpu = cpu.Cpu()
+        test_cpu.memory = bytearray(b'\x00\x00\x05\x00')
+
+        with mock.patch.object(test_cpu, '_and_immediate') as mock_and:
+            test_cpu._and(cpu.AddressingMode.absolute, 2)
+
+        assert mock_and.called_with(5), 'Memory is not accessed in the right place.'
