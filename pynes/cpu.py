@@ -134,3 +134,6 @@ class Cpu:
 
         # Result is only 8 bit, must modulo it to fit register
         self.accumulator = result % MAX_UNSIGNED_VALUE
+
+        # Check if the entire register is zero. Or just use int comparison
+        self.processor_status_zero = self.accumulator == 0

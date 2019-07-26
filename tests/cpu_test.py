@@ -235,6 +235,19 @@ class TestAsl:
         assert test_cpu.accumulator == expected
 
     @staticmethod
+    @named_parametrize(
+        ('accumulator_state', 'expected'), [('Zero', 0x0, True), ('Non-zero', 0xFF, False), ('0x80', 0x80, True)]
+    )
+    def test_zero_flag(accumulator_state, expected):
+        """Test that result is zero."""
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+
+        test_cpu.asl(cpu.AddressingMode.accumulator)
+
+        assert test_cpu.processor_status_zero == expected
+
+    @staticmethod
     @named_parametrize(('accumulator_state'), [('Zero', 0x0, 0x0), ('Max', 0xFF, 0xFE), ('Random', 0x11, 0x22)])
     @pytest.mark.parametrize(('flag_state'), [(True,), (False,)])
     def test_unaffected_flag(accumulator_state, flag_state):
