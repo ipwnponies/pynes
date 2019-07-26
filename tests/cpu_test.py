@@ -1,5 +1,7 @@
 from unittest import mock
 
+import pytest
+
 from pynes import cpu
 from testing.util import named_parametrize
 
@@ -92,6 +94,27 @@ class TestAddWithCarryImmediate:
         test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
 
         assert test_cpu.processor_status_negative == expected
+
+    @staticmethod
+    @named_parametrize(
+        ('accumulator_state', 'immediate'),
+        [('Postiive values', 100, 100), ('Positive overflow', 200, 200), ('Zero', 0, 0)],
+    )
+    @pytest.mark.parametrize(('flag_state'), [(True,), (False,)])
+    def test_unaffected_flag(accumulator_state, immediate, flag_state):
+        """Test that other flags are unchanged."""
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+
+        test_cpu.processor_status_interrupt_disable = flag_state
+        test_cpu.processor_status_decimal_mode = flag_state
+        test_cpu.processor_status_break_command = flag_state
+
+        test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
+
+        assert test_cpu.processor_status_interrupt_disable == flag_state
+        assert test_cpu.processor_status_decimal_mode == flag_state
+        assert test_cpu.processor_status_break_command == flag_state
 
 
 class TestAddWithCarryAbsolute:
