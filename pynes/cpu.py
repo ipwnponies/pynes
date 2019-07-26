@@ -7,6 +7,7 @@ class AddressingMode(enum.Enum):
     immediate = enum.auto()
     absolute = enum.auto()
     zero_page = enum.auto()
+    accumulator = enum.auto()
 
 
 class Cpu:
@@ -14,6 +15,10 @@ class Cpu:
 
     - 8 bit cpu, with 16 bit address bus
     - little endian ie. value of 18 is stored as 0x0201
+    - status register
+    - program counter
+    - stack and stack pointer
+    - x, y and accumulator register. 8-bit registers that have semantic meaning and use
     """
 
     def __init__(self) -> None:
@@ -33,6 +38,10 @@ class Cpu:
         self.memory: bytearray = bytearray()
 
     def add_with_carry(self, addressing_mode: AddressingMode, data: int) -> None:
+        """Add instruction
+
+        Overflow is handled with two status flags: carry for unsigned addition and overflow for signed addition.
+        """
         if addressing_mode == AddressingMode.immediate:
             self._add_with_carry_immediate(data)
         elif addressing_mode == AddressingMode.absolute:
@@ -42,6 +51,8 @@ class Cpu:
             # Adding here for completeness but this is very much a hardware optimization, that looks non-functional
             # in python.
             self._add_with_carry_absolute(data)
+        else:
+            raise NotImplementedError()
 
     def _add_with_carry_immediate(self, value: int) -> None:
         arg1 = self.accumulator
@@ -86,6 +97,8 @@ class Cpu:
             # Adding here for completeness but this is very much a hardware optimization, that looks non-functional
             # in python.
             self._and_absolute(value)
+        else:
+            raise NotImplementedError()
 
     def _and_immediate(self, value: int) -> None:
         arg1 = self.accumulator
@@ -103,3 +116,30 @@ class Cpu:
     def _and_absolute(self, value: int) -> None:
         value = self.read_from_memory(value)
         return self._and_immediate(value)
+
+    def asl(self, addressing_mode: AddressingMode) -> None:
+        """Arithmetic shift left
+
+        0 is shifted into LSB and MSB is shifted into carry flag.
+        """
+        if addressing_mode == AddressingMode.accumulator:
+            self._asl_accumulator()
+        else:
+            raise NotImplementedError()
+
+    def _asl_accumulator(self) -> None:
+        """ASL accumulator"""
+        arg = self.accumulator
+        result = arg << 1
+
+        # Check the previous MSB for carry value
+        self.processor_status_carry = bool(result & 0x100)
+
+        # Check the MSB for negative value
+        self.processor_status_negative = bool(result & 0x80)
+
+        # Result is only 8 bit, must modulo it to fit register
+        self.accumulator = result % MAX_UNSIGNED_VALUE
+
+        # Check if the entire register is zero. Or just use int comparison
+        self.processor_status_zero = self.accumulator == 0
