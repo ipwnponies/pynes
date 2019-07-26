@@ -219,3 +219,17 @@ class TestAnd:
         assert test_cpu.processor_status_decimal_mode == flag_state
         assert test_cpu.processor_status_break_command == flag_state
         assert test_cpu.processor_status_overflow == flag_state
+
+
+class TestAsl:
+    @staticmethod
+    @named_parametrize(
+        ('accumulator_state', 'expected'), [('Zero', 0x0, 0x0), ('Max', 0xFF, 0xFE), ('Random', 0x11, 0x22)]
+    )
+    def test_asl(accumulator_state, expected):
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+
+        test_cpu.asl(cpu.AddressingMode.accumulator)
+
+        assert test_cpu.accumulator == expected
