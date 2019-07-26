@@ -14,7 +14,7 @@ class TestAddWithCarryImmediate:
             ('Immediate value', 0, 10, 10),
             ('Accumulator set', 5, 0, 5),
             ('Accumulator set and immediate value', 5, 10, 15),
-            ('Upper bound test', 100, 27, 127),
+            ('Upper bound test', 200, 55, 255),
         ],
     )
     def test_adding(accumulator_state, immediate, expected):
@@ -67,13 +67,13 @@ class TestAddWithCarryImmediate:
 
     @staticmethod
     @named_parametrize(
-        ('accumulator_state', 'immediate'), [('All zero values', 0, 0), ('Result is 128 (overflow)', 100, 28)]
+        ('accumulator_state', 'immediate'), [('All zero values', 0, 0), ('Result is 256 (overflow)', 200, 56)]
     )
     def test_zero_flag(accumulator_state, immediate):
         """Test that result is zero."""
-        assert (accumulator_state + immediate) % (
-            2 ** 7
-        ) == 0, 'Test code assertion, test inputs must only for result == 0'
+        assert (
+            accumulator_state + immediate
+        ) % cpu.MAX_UNSIGNED_VALUE == 0, 'Test code assertion, test inputs must only for result == 0'
 
         test_cpu = cpu.Cpu()
         test_cpu.accumulator = accumulator_state
@@ -130,3 +130,92 @@ class TestAddWithCarryAbsolute:
             test_cpu.add_with_carry(cpu.AddressingMode.absolute, 2)
 
         assert mock_add.called_with(5), 'Memory is not accessed in the right place.'
+
+
+class TestAnd:
+    @staticmethod
+    @named_parametrize(
+        ('accumulator_state', 'immediate', 'expected'),
+        [('Match', 0xFF, 0x80, 0x80), ('No match', 0x00, 0x80, 0x00), ('Negative', 0xDD, 0xF0, 0xD0)],
+    )
+    def test_immediate(accumulator_state, immediate, expected):
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+
+        test_cpu._and(cpu.AddressingMode.immediate, immediate)
+
+        assert test_cpu.accumulator == expected
+
+    @staticmethod
+    def test_absolute():
+        """Test that absolute addressing gets the value from memory, then performs same addition as immediate."""
+        test_cpu = cpu.Cpu()
+        test_cpu.memory = bytearray(b'\x00\x00\x05\x00')
+
+        with mock.patch.object(test_cpu, '_and_immediate') as mock_and:
+            test_cpu._and(cpu.AddressingMode.absolute, 2)
+
+        assert mock_and.called_with(5), 'Memory is not accessed in the right place.'
+
+    @staticmethod
+    @named_parametrize(
+        ('accumulator_state', 'immediate', 'expected'),
+        [('Some matching values', 0x0F, 0x02, False), ('No matching values', 0xF0, 0x02, True)],
+    )
+    def test_zero_flag(accumulator_state, immediate, expected):
+        """Test that result is zero."""
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+        test_cpu._and(cpu.AddressingMode.immediate, immediate)
+
+        assert test_cpu.processor_status_zero == expected
+
+    @staticmethod
+    @named_parametrize(
+        ('accumulator_state', 'immediate', 'expected'),
+        [
+            ('Both positive', 0x0F, 0x0F, False),
+            ('Mixed1', 0xF0, 0x70, False),
+            ('Mixed2', 0x70, 0xF0, False),
+            ('both negative', 0xF0, 0xF0, True),
+        ],
+    )
+    def test_negative_flag(accumulator_state, immediate, expected):
+        """Test that negative bit is set if the result is negative."""
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+
+        test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
+
+        assert test_cpu.processor_status_negative == expected
+
+    @staticmethod
+    @named_parametrize(
+        ('accumulator_state', 'immediate'),
+        [
+            ('Zero', 0x0, 0x0),
+            ('Max values', 0xFF, 0xFF),
+            ('Both positive', 0x0F, 0x73),
+            ('Both negative', 0xF0, 0xD3),
+            ('Potential singed overflow', 0b01000000, 0b01000000),
+        ],
+    )
+    @pytest.mark.parametrize(('flag_state'), [(True,), (False,)])
+    def test_unaffected_flag(accumulator_state, immediate, flag_state):
+        """Test that other flags are unchanged."""
+        test_cpu = cpu.Cpu()
+        test_cpu.accumulator = accumulator_state
+
+        test_cpu.processor_status_carry = flag_state
+        test_cpu.processor_status_interrupt_disable = flag_state
+        test_cpu.processor_status_decimal_mode = flag_state
+        test_cpu.processor_status_break_command = flag_state
+        test_cpu.processor_status_overflow = flag_state
+
+        test_cpu._and(cpu.AddressingMode.immediate, immediate)
+
+        assert test_cpu.processor_status_carry == flag_state
+        assert test_cpu.processor_status_interrupt_disable == flag_state
+        assert test_cpu.processor_status_decimal_mode == flag_state
+        assert test_cpu.processor_status_break_command == flag_state
+        assert test_cpu.processor_status_overflow == flag_state

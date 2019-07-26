@@ -1,12 +1,12 @@
 import enum
 
-MAX_SIGNED_VALUE = 2 ** 7
 MAX_UNSIGNED_VALUE = 2 ** 8
 
 
 class AddressingMode(enum.Enum):
     immediate = enum.auto()
     absolute = enum.auto()
+    zero_page = enum.auto()
 
 
 class Cpu:
@@ -32,10 +32,15 @@ class Cpu:
         self.processor_status_negative: bool = False
         self.memory: bytearray = bytearray()
 
-    def add_with_carry(self, addressing_mode: enum.Enum, data: int) -> None:
+    def add_with_carry(self, addressing_mode: AddressingMode, data: int) -> None:
         if addressing_mode == AddressingMode.immediate:
             self._add_with_carry_immediate(data)
         elif addressing_mode == AddressingMode.absolute:
+            self._add_with_carry_absolute(data)
+        elif addressing_mode == AddressingMode.zero_page:
+            # If you only specify the last byte of address, this automagically becomes equivalent to absolute
+            # Adding here for completeness but this is very much a hardware optimization, that looks non-functional
+            # in python.
             self._add_with_carry_absolute(data)
 
     def _add_with_carry_immediate(self, value: int) -> None:
@@ -59,7 +64,7 @@ class Cpu:
         self.processor_status_negative = bool(result & 0x80)
 
         # Result is only 8 bit, must modulo it to fit register
-        self.accumulator = result % MAX_SIGNED_VALUE
+        self.accumulator = result % MAX_UNSIGNED_VALUE
 
         # Check if the entire register is zero. Or just use int comparison
         self.processor_status_zero = self.accumulator == 0
@@ -70,3 +75,31 @@ class Cpu:
 
     def read_from_memory(self, address: int) -> int:
         return self.memory[address]
+
+    def _and(self, addressing_mode: AddressingMode, value: int) -> None:
+        if addressing_mode == AddressingMode.immediate:
+            self._and_immediate(value)
+        elif addressing_mode == AddressingMode.absolute:
+            self._and_absolute(value)
+        elif addressing_mode == AddressingMode.zero_page:
+            # If you only specify the last byte of address, this automagically becomes equivalent to absolute
+            # Adding here for completeness but this is very much a hardware optimization, that looks non-functional
+            # in python.
+            self._and_absolute(value)
+
+    def _and_immediate(self, value: int) -> None:
+        arg1 = self.accumulator
+        result = arg1 & value
+
+        # Check the MSB for negative value
+        self.processor_status_negative = bool(result & 0x80)
+
+        # Result is only 8 bit, must modulo it to fit register
+        self.accumulator = result % MAX_UNSIGNED_VALUE
+
+        # Check if the entire register is zero. Or just use int comparison
+        self.processor_status_zero = self.accumulator == 0
+
+    def _and_absolute(self, value: int) -> None:
+        value = self.read_from_memory(value)
+        return self._and_immediate(value)
