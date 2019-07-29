@@ -143,3 +143,7 @@ class Cpu:
 
         # Check if the entire register is zero. Or just use int comparison
         self.processor_status_zero = self.accumulator == 0
+
+    def branch_if_carry_clear(self, value: int) -> None:
+        if not self.processor_status_carry:
+            self.program_counter += value

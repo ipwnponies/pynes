@@ -100,7 +100,7 @@ class TestAddWithCarryImmediate:
         ('accumulator_state', 'immediate'),
         [('Postiive values', 100, 100), ('Positive overflow', 200, 200), ('Zero', 0, 0)],
     )
-    @pytest.mark.parametrize(('flag_state'), [(True,), (False,)])
+    @pytest.mark.parametrize('flag_state', [True, False])
     def test_unaffected_flag(accumulator_state, immediate, flag_state):
         """Test that other flags are unchanged."""
         test_cpu = cpu.Cpu()
@@ -206,7 +206,7 @@ class TestAnd:
             ('Potential singed overflow', 0b01000000, 0b01000000),
         ],
     )
-    @pytest.mark.parametrize(('flag_state'), [(True,), (False,)])
+    @pytest.mark.parametrize('flag_state', [True, False])
     def test_unaffected_flag(accumulator_state, immediate, flag_state):
         """Test that other flags are unchanged."""
         test_cpu = cpu.Cpu()
@@ -294,8 +294,8 @@ class TestAsl:
         assert test_cpu.processor_status_negative == expected
 
     @staticmethod
-    @named_parametrize(('accumulator_state'), [('Zero', 0x0, 0x0), ('Max', 0xFF, 0xFE), ('Random', 0x11, 0x22)])
-    @pytest.mark.parametrize(('flag_state'), [(True,), (False,)])
+    @named_parametrize('accumulator_state', [('Zero', 0x0, 0x0), ('Max', 0xFF, 0xFE), ('Random', 0x11, 0x22)])
+    @pytest.mark.parametrize('flag_state', [True, False])
     def test_unaffected_flag(accumulator_state, flag_state):
         """Test that other flags are unchanged."""
         test_cpu = cpu.Cpu()
@@ -312,3 +312,51 @@ class TestAsl:
         assert test_cpu.processor_status_decimal_mode == flag_state
         assert test_cpu.processor_status_break_command == flag_state
         assert test_cpu.processor_status_overflow == flag_state
+
+
+class TestBranchIfCarryClear:
+    @staticmethod
+    def test():
+        test_cpu = cpu.Cpu()
+        test_cpu.program_counter = 100
+        test_cpu.processor_status_carry = False
+
+        test_cpu.branch_if_carry_clear(10)
+
+        assert test_cpu.program_counter == 110
+
+    @staticmethod
+    def test_carry_set():
+        test_cpu = cpu.Cpu()
+        test_cpu.program_counter = 100
+        test_cpu.processor_status_carry = True
+
+        test_cpu.branch_if_carry_clear(10)
+
+        assert test_cpu.program_counter == 100
+
+    @staticmethod
+    @pytest.mark.parametrize('carry_state', [True, False])
+    @pytest.mark.parametrize('flag_state', [True, False])
+    def test_unaffected_flag(carry_state, flag_state):
+        """Test that other flags are unchanged."""
+        test_cpu = cpu.Cpu()
+        test_cpu.program_counter = 100
+        test_cpu.processor_status_carry = carry_state
+
+        test_cpu.processor_status_zero = flag_state
+        test_cpu.processor_status_interrupt_disable = flag_state
+        test_cpu.processor_status_decimal_mode = flag_state
+        test_cpu.processor_status_break_command = flag_state
+        test_cpu.processor_status_overflow = flag_state
+        test_cpu.processor_status_negative = flag_state
+
+        test_cpu.branch_if_carry_clear(10)
+
+        assert test_cpu.processor_status_carry == carry_state
+        assert test_cpu.processor_status_zero == flag_state
+        assert test_cpu.processor_status_interrupt_disable == flag_state
+        assert test_cpu.processor_status_decimal_mode == flag_state
+        assert test_cpu.processor_status_break_command == flag_state
+        assert test_cpu.processor_status_overflow == flag_state
+        assert test_cpu.processor_status_negative == flag_state
