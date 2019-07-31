@@ -162,14 +162,18 @@ class Cpu:
 
     def branch_if_carry_clear(self, value: int) -> None:
         """BCC instruction"""
-        self._branch_if_carry(False, value)
+        self._branch(not self.status.carry, value)
 
     def branch_if_carry_set(self, value: int) -> None:
         """BCS instruction"""
-        self._branch_if_carry(True, value)
+        self._branch(self.status.carry, value)
 
-    def _branch_if_carry(self, should_branch: bool, value: int) -> None:
-        if self.status.carry == should_branch:
+    def branch_if_equal(self, value: int) -> None:
+        """BEQ instruction"""
+        self._branch(self.status.zero, value)
+
+    def _branch(self, predicate_for_branch: bool, value: int) -> None:
+        if predicate_for_branch:
             self.program_counter += value
 
     def bit(self, value: int) -> None:
