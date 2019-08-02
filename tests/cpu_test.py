@@ -360,3 +360,40 @@ class TestBranchIfCarryClear:
         assert test_cpu.processor_status_break_command == flag_state
         assert test_cpu.processor_status_overflow == flag_state
         assert test_cpu.processor_status_negative == flag_state
+
+
+class TestClearCarry:
+    @staticmethod
+    @pytest.mark.parametrize('init_carry_state', [True, False])
+    def test(init_carry_state):
+        """Test that carry flag is always set to false."""
+        test_cpu = cpu.Cpu()
+        test_cpu.processor_status_carry = init_carry_state
+
+        test_cpu.clear_carry()
+
+        assert not test_cpu.processor_status_carry
+
+    @staticmethod
+    @pytest.mark.parametrize('init_carry_state', [True, False])
+    @pytest.mark.parametrize('flag_state', [True, False])
+    def test_unaffected_flag(init_carry_state, flag_state):
+        """Test that other flags are unchanged."""
+        test_cpu = cpu.Cpu()
+        test_cpu.processor_status_carry = init_carry_state
+
+        test_cpu.processor_status_zero = flag_state
+        test_cpu.processor_status_interrupt_disable = flag_state
+        test_cpu.processor_status_decimal_mode = flag_state
+        test_cpu.processor_status_break_command = flag_state
+        test_cpu.processor_status_overflow = flag_state
+        test_cpu.processor_status_negative = flag_state
+
+        test_cpu.clear_carry()
+
+        assert test_cpu.processor_status_zero == flag_state
+        assert test_cpu.processor_status_interrupt_disable == flag_state
+        assert test_cpu.processor_status_decimal_mode == flag_state
+        assert test_cpu.processor_status_break_command == flag_state
+        assert test_cpu.processor_status_overflow == flag_state
+        assert test_cpu.processor_status_negative == flag_state

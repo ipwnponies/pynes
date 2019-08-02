@@ -147,3 +147,7 @@ class Cpu:
     def branch_if_carry_clear(self, value: int) -> None:
         if not self.processor_status_carry:
             self.program_counter += value
+
+    def clear_carry(self) -> None:
+        """Clear carry status flag."""
+        self.processor_status_carry = False
