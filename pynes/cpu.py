@@ -10,6 +10,16 @@ class AddressingMode(enum.Enum):
     accumulator = enum.auto()
 
 
+class StatusFlag(enum.Enum):
+    carry = enum.auto()
+    zero = enum.auto()
+    interrupt = enum.auto()
+    decimal = enum.auto()
+    break_ = enum.auto()
+    overflow = enum.auto()
+    negative = enum.auto()
+
+
 class Cpu:
     """6502 cpu
 
@@ -149,5 +159,17 @@ class Cpu:
             self.program_counter += value
 
     def clear_carry(self) -> None:
+        self._clear_flag(StatusFlag.carry)
+
+    def _clear_flag(self, flag: StatusFlag) -> None:
         """Clear carry status flag."""
-        self.processor_status_carry = False
+        if flag == StatusFlag.carry:
+            self.processor_status_carry = False
+        elif flag == StatusFlag.decimal:
+            self.processor_status_decimal_mode = False
+        elif flag == StatusFlag.interrupt:
+            self.processor_status_interrupt_disable = False
+        elif flag == StatusFlag.overflow:
+            self.processor_status_overflow = False
+        else:
+            raise NotImplementedError(f'{flag} mode is not supported')

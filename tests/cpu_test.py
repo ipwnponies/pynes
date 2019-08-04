@@ -362,10 +362,13 @@ class TestBranchIfCarryClear:
         assert test_cpu.processor_status_negative == flag_state
 
 
-class TestClearCarry:
+class TestClear:
     @staticmethod
+    @pytest.mark.parametrize(
+        'status_flag', (cpu.StatusFlag.carry, cpu.StatusFlag.interrupt, cpu.StatusFlag.decimal, cpu.StatusFlag.overflow)
+    )
     @pytest.mark.parametrize('init_carry_state', [True, False])
-    def test(init_carry_state):
+    def test_clear(status_flag, init_carry_state):
         """Test that carry flag is always set to false."""
         test_cpu = cpu.Cpu()
         test_cpu.processor_status_carry = init_carry_state
@@ -375,9 +378,21 @@ class TestClearCarry:
         assert not test_cpu.processor_status_carry
 
     @staticmethod
+    @pytest.mark.parametrize('status_flag', (cpu.StatusFlag.zero, cpu.StatusFlag.break_, cpu.StatusFlag.negative))
+    @pytest.mark.parametrize('init_state', [True, False])
+    def test_unsupported_flags(status_flag, init_state):
+        """Test that these statuses do not have clear instruction support."""
+        test_cpu = cpu.Cpu()
+        test_cpu.processor_status_zero = init_state
+
+        with pytest.raises(NotImplementedError):
+            test_cpu._clear_flag(status_flag)
+
+    @pytest.mark.skip
+    @staticmethod
     @pytest.mark.parametrize('init_carry_state', [True, False])
     @pytest.mark.parametrize('flag_state', [True, False])
-    def test_unaffected_flag(init_carry_state, flag_state):
+    def test_unaffected_flag(status_flag, init_carry_state, flag_state):
         """Test that other flags are unchanged."""
         test_cpu = cpu.Cpu()
         test_cpu.processor_status_carry = init_carry_state
