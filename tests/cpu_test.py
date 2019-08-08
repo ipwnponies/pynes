@@ -24,7 +24,7 @@ class TestAddWithCarryImmediate:
         test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
 
         assert test_cpu.accumulator == expected
-        assert not test_cpu.processor_status_carry
+        assert not test_cpu.status.carry
 
     @staticmethod
     @named_parametrize(
@@ -42,7 +42,7 @@ class TestAddWithCarryImmediate:
         test_cpu.accumulator = accumulator_state
         test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
 
-        assert test_cpu.processor_status_carry == expected
+        assert test_cpu.status.carry == expected
 
     @staticmethod
     @named_parametrize(
@@ -63,7 +63,7 @@ class TestAddWithCarryImmediate:
 
         test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
 
-        assert test_cpu.processor_status_overflow == expected
+        assert test_cpu.status.overflow == expected
 
     @staticmethod
     @named_parametrize(
@@ -79,7 +79,7 @@ class TestAddWithCarryImmediate:
         test_cpu.accumulator = accumulator_state
         test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
 
-        assert test_cpu.processor_status_zero
+        assert test_cpu.status.zero
 
     @staticmethod
     @named_parametrize(
@@ -93,7 +93,7 @@ class TestAddWithCarryImmediate:
 
         test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
 
-        assert test_cpu.processor_status_negative == expected
+        assert test_cpu.status.negative == expected
 
     @staticmethod
     @named_parametrize(
@@ -106,15 +106,15 @@ class TestAddWithCarryImmediate:
         test_cpu = cpu.Cpu()
         test_cpu.accumulator = accumulator_state
 
-        test_cpu.processor_status_interrupt_disable = flag_state
-        test_cpu.processor_status_decimal_mode = flag_state
-        test_cpu.processor_status_break_command = flag_state
+        test_cpu.status.interrupt_disable = flag_state
+        test_cpu.status.decimal = flag_state
+        test_cpu.status.break_ = flag_state
 
         test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
 
-        assert test_cpu.processor_status_interrupt_disable == flag_state
-        assert test_cpu.processor_status_decimal_mode == flag_state
-        assert test_cpu.processor_status_break_command == flag_state
+        assert test_cpu.status.interrupt_disable == flag_state
+        assert test_cpu.status.decimal == flag_state
+        assert test_cpu.status.break_ == flag_state
 
     @staticmethod
     def test_absolute():
@@ -174,7 +174,7 @@ class TestAnd:
         test_cpu.accumulator = accumulator_state
         test_cpu._and(cpu.AddressingMode.immediate, immediate)
 
-        assert test_cpu.processor_status_zero == expected
+        assert test_cpu.status.zero == expected
 
     @staticmethod
     @named_parametrize(
@@ -193,7 +193,7 @@ class TestAnd:
 
         test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
 
-        assert test_cpu.processor_status_negative == expected
+        assert test_cpu.status.negative == expected
 
     @staticmethod
     @named_parametrize(
@@ -212,19 +212,19 @@ class TestAnd:
         test_cpu = cpu.Cpu()
         test_cpu.accumulator = accumulator_state
 
-        test_cpu.processor_status_carry = flag_state
-        test_cpu.processor_status_interrupt_disable = flag_state
-        test_cpu.processor_status_decimal_mode = flag_state
-        test_cpu.processor_status_break_command = flag_state
-        test_cpu.processor_status_overflow = flag_state
+        test_cpu.status.carry = flag_state
+        test_cpu.status.interrupt_disable = flag_state
+        test_cpu.status.decimal = flag_state
+        test_cpu.status.break_ = flag_state
+        test_cpu.status.overflow = flag_state
 
         test_cpu._and(cpu.AddressingMode.immediate, immediate)
 
-        assert test_cpu.processor_status_carry == flag_state
-        assert test_cpu.processor_status_interrupt_disable == flag_state
-        assert test_cpu.processor_status_decimal_mode == flag_state
-        assert test_cpu.processor_status_break_command == flag_state
-        assert test_cpu.processor_status_overflow == flag_state
+        assert test_cpu.status.carry == flag_state
+        assert test_cpu.status.interrupt_disable == flag_state
+        assert test_cpu.status.decimal == flag_state
+        assert test_cpu.status.break_ == flag_state
+        assert test_cpu.status.overflow == flag_state
 
     @staticmethod
     def test_zero_page():
@@ -259,7 +259,7 @@ class TestAsl:
 
         test_cpu.asl(cpu.AddressingMode.accumulator)
 
-        assert test_cpu.processor_status_carry == expected
+        assert test_cpu.status.carry == expected
 
     @staticmethod
     @named_parametrize(
@@ -272,7 +272,7 @@ class TestAsl:
 
         test_cpu.asl(cpu.AddressingMode.accumulator)
 
-        assert test_cpu.processor_status_zero == expected
+        assert test_cpu.status.zero == expected
 
     @staticmethod
     @named_parametrize(
@@ -291,7 +291,7 @@ class TestAsl:
 
         test_cpu.asl(cpu.AddressingMode.accumulator)
 
-        assert test_cpu.processor_status_negative == expected
+        assert test_cpu.status.negative == expected
 
     @staticmethod
     @named_parametrize('accumulator_state', [('Zero', 0x0, 0x0), ('Max', 0xFF, 0xFE), ('Random', 0x11, 0x22)])
@@ -301,17 +301,17 @@ class TestAsl:
         test_cpu = cpu.Cpu()
         test_cpu.accumulator = accumulator_state
 
-        test_cpu.processor_status_interrupt_disable = flag_state
-        test_cpu.processor_status_decimal_mode = flag_state
-        test_cpu.processor_status_break_command = flag_state
-        test_cpu.processor_status_overflow = flag_state
+        test_cpu.status.interrupt_disable = flag_state
+        test_cpu.status.decimal = flag_state
+        test_cpu.status.break_ = flag_state
+        test_cpu.status.overflow = flag_state
 
         test_cpu.asl(cpu.AddressingMode.accumulator)
 
-        assert test_cpu.processor_status_interrupt_disable == flag_state
-        assert test_cpu.processor_status_decimal_mode == flag_state
-        assert test_cpu.processor_status_break_command == flag_state
-        assert test_cpu.processor_status_overflow == flag_state
+        assert test_cpu.status.interrupt_disable == flag_state
+        assert test_cpu.status.decimal == flag_state
+        assert test_cpu.status.break_ == flag_state
+        assert test_cpu.status.overflow == flag_state
 
 
 class TestBranchIfCarryClear:
@@ -319,7 +319,7 @@ class TestBranchIfCarryClear:
     def test():
         test_cpu = cpu.Cpu()
         test_cpu.program_counter = 100
-        test_cpu.processor_status_carry = False
+        test_cpu.status.carry = False
 
         test_cpu.branch_if_carry_clear(10)
 
@@ -329,7 +329,7 @@ class TestBranchIfCarryClear:
     def test_carry_set():
         test_cpu = cpu.Cpu()
         test_cpu.program_counter = 100
-        test_cpu.processor_status_carry = True
+        test_cpu.status.carry = True
 
         test_cpu.branch_if_carry_clear(10)
 
@@ -342,40 +342,41 @@ class TestBranchIfCarryClear:
         """Test that other flags are unchanged."""
         test_cpu = cpu.Cpu()
         test_cpu.program_counter = 100
-        test_cpu.processor_status_carry = carry_state
+        test_cpu.status.carry = carry_state
 
-        test_cpu.processor_status_zero = flag_state
-        test_cpu.processor_status_interrupt_disable = flag_state
-        test_cpu.processor_status_decimal_mode = flag_state
-        test_cpu.processor_status_break_command = flag_state
-        test_cpu.processor_status_overflow = flag_state
-        test_cpu.processor_status_negative = flag_state
+        test_cpu.status.zero = flag_state
+        test_cpu.status.interrupt_disable = flag_state
+        test_cpu.status.decimal = flag_state
+        test_cpu.status.break_ = flag_state
+        test_cpu.status.overflow = flag_state
+        test_cpu.status.negative = flag_state
 
         test_cpu.branch_if_carry_clear(10)
 
-        assert test_cpu.processor_status_carry == carry_state
-        assert test_cpu.processor_status_zero == flag_state
-        assert test_cpu.processor_status_interrupt_disable == flag_state
-        assert test_cpu.processor_status_decimal_mode == flag_state
-        assert test_cpu.processor_status_break_command == flag_state
-        assert test_cpu.processor_status_overflow == flag_state
-        assert test_cpu.processor_status_negative == flag_state
+        assert test_cpu.status.carry == carry_state
+        assert test_cpu.status.zero == flag_state
+        assert test_cpu.status.interrupt_disable == flag_state
+        assert test_cpu.status.decimal == flag_state
+        assert test_cpu.status.break_ == flag_state
+        assert test_cpu.status.overflow == flag_state
+        assert test_cpu.status.negative == flag_state
 
 
 class TestClear:
     @staticmethod
     @pytest.mark.parametrize(
-        'status_flag', (cpu.StatusFlag.carry, cpu.StatusFlag.interrupt, cpu.StatusFlag.decimal, cpu.StatusFlag.overflow)
+        'status_flag',
+        (cpu.StatusFlag.carry, cpu.StatusFlag.interrupt_disable, cpu.StatusFlag.decimal, cpu.StatusFlag.overflow),
     )
     @pytest.mark.parametrize('init_carry_state', [True, False])
     def test_clear(status_flag, init_carry_state):
         """Test that carry flag is always set to false."""
         test_cpu = cpu.Cpu()
-        test_cpu.processor_status_carry = init_carry_state
+        test_cpu.status.carry = init_carry_state
 
         test_cpu.clear_carry()
 
-        assert not test_cpu.processor_status_carry
+        assert not test_cpu.status.carry
 
     @staticmethod
     @pytest.mark.parametrize('status_flag', (cpu.StatusFlag.zero, cpu.StatusFlag.break_, cpu.StatusFlag.negative))
@@ -383,7 +384,7 @@ class TestClear:
     def test_unsupported_flags(status_flag, init_state):
         """Test that these statuses do not have clear instruction support."""
         test_cpu = cpu.Cpu()
-        test_cpu.processor_status_zero = init_state
+        test_cpu.status.zero = init_state
 
         with pytest.raises(NotImplementedError):
             test_cpu._clear_flag(status_flag)
@@ -395,20 +396,20 @@ class TestClear:
     def test_unaffected_flag(status_flag, init_carry_state, flag_state):
         """Test that other flags are unchanged."""
         test_cpu = cpu.Cpu()
-        test_cpu.processor_status_carry = init_carry_state
+        test_cpu.status.carry = init_carry_state
 
-        test_cpu.processor_status_zero = flag_state
-        test_cpu.processor_status_interrupt_disable = flag_state
-        test_cpu.processor_status_decimal_mode = flag_state
-        test_cpu.processor_status_break_command = flag_state
-        test_cpu.processor_status_overflow = flag_state
-        test_cpu.processor_status_negative = flag_state
+        test_cpu.status.zero = flag_state
+        test_cpu.status.interrupt_disable = flag_state
+        test_cpu.status.decimal = flag_state
+        test_cpu.status.break_ = flag_state
+        test_cpu.status.overflow = flag_state
+        test_cpu.status.negative = flag_state
 
         test_cpu.clear_carry()
 
-        assert test_cpu.processor_status_zero == flag_state
-        assert test_cpu.processor_status_interrupt_disable == flag_state
-        assert test_cpu.processor_status_decimal_mode == flag_state
-        assert test_cpu.processor_status_break_command == flag_state
-        assert test_cpu.processor_status_overflow == flag_state
-        assert test_cpu.processor_status_negative == flag_state
+        assert test_cpu.status.zero == flag_state
+        assert test_cpu.status.interrupt_disable == flag_state
+        assert test_cpu.status.decimal == flag_state
+        assert test_cpu.status.break_ == flag_state
+        assert test_cpu.status.overflow == flag_state
+        assert test_cpu.status.negative == flag_state
