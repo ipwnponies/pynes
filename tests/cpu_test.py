@@ -380,11 +380,9 @@ class TestClear:
 
     @staticmethod
     @pytest.mark.parametrize('status_flag', (cpu.StatusFlag.zero, cpu.StatusFlag.break_, cpu.StatusFlag.negative))
-    @pytest.mark.parametrize('init_state', [True, False])
-    def test_unsupported_flags(status_flag, init_state):
+    def test_unsupported_flags(status_flag):
         """Test that these statuses do not have clear instruction support."""
         test_cpu = cpu.Cpu()
-        test_cpu.status.zero = init_state
 
         with pytest.raises(NotImplementedError):
             test_cpu._clear_flag(status_flag)
