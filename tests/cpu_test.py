@@ -346,15 +346,15 @@ class TestClear:
         'status_flag',
         (cpu.StatusFlag.carry, cpu.StatusFlag.interrupt_disable, cpu.StatusFlag.decimal, cpu.StatusFlag.overflow),
     )
-    @pytest.mark.parametrize('init_carry_state', [True, False])
-    def test_clear(self, status_flag, init_carry_state):
-        """Test that carry flag is always set to false."""
+    @pytest.mark.parametrize('init_state', [True, False])
+    def test_clear(self, status_flag, init_state):
+        """Test that status flags are always set to false when clear instruction is called."""
         test_cpu = cpu.Cpu()
-        test_cpu.status.carry = init_carry_state
+        setattr(test_cpu.status, status_flag.name, init_state)
 
-        test_cpu.clear_carry()
+        test_cpu._clear_flag(status_flag)
 
-        assert not test_cpu.status.carry
+        assert not getattr(test_cpu.status, status_flag.name)
 
     @pytest.mark.parametrize('status_flag', (cpu.StatusFlag.zero, cpu.StatusFlag.break_, cpu.StatusFlag.negative))
     def test_unsupported_flags(self, status_flag):
@@ -364,26 +364,31 @@ class TestClear:
         with pytest.raises(NotImplementedError):
             test_cpu._clear_flag(status_flag)
 
-    @pytest.mark.skip
-    @pytest.mark.parametrize('init_carry_state', [True, False])
+    @pytest.mark.parametrize(
+        'status_flag',
+        (cpu.StatusFlag.carry, cpu.StatusFlag.interrupt_disable, cpu.StatusFlag.decimal, cpu.StatusFlag.overflow),
+    )
+    @pytest.mark.parametrize('init_state', [True, False])
     @pytest.mark.parametrize('flag_state', [True, False])
-    def test_unaffected_flag(self, status_flag, init_carry_state, flag_state):
+    def test_unaffected_flag(self, status_flag, init_state, flag_state):
         """Test that other flags are unchanged."""
         test_cpu = cpu.Cpu()
-        test_cpu.status.carry = init_carry_state
+        setattr(test_cpu.status, status_flag.name, init_state)
 
-        test_cpu.status.zero = flag_state
-        test_cpu.status.interrupt_disable = flag_state
-        test_cpu.status.decimal = flag_state
-        test_cpu.status.break_ = flag_state
-        test_cpu.status.overflow = flag_state
-        test_cpu.status.negative = flag_state
+        other_status = set(cpu.StatusFlag) - {status_flag}
 
-        test_cpu.clear_carry()
+        # Set state of target status flags
+        for i in other_status:
+            setattr(test_cpu.status, i.name, flag_state)
 
-        assert test_cpu.status.zero == flag_state
-        assert test_cpu.status.interrupt_disable == flag_state
-        assert test_cpu.status.decimal == flag_state
-        assert test_cpu.status.break_ == flag_state
-        assert test_cpu.status.overflow == flag_state
-        assert test_cpu.status.negative == flag_state
+        test_cpu._clear_flag(status_flag)
+
+        # Assert state of target status flags unchanged
+        for i in other_status:
+            assert getattr(test_cpu.status, i.name) == flag_state
+
+    def test_clear_carry(self):
+        test_cpu = cpu.Cpu()
+        with mock.patch.object(test_cpu, '_clear_flag') as clear_flag:
+            test_cpu.clear_carry()
+        assert clear_flag.called_with(cpu.StatusFlag.carry)
