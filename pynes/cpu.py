@@ -1,4 +1,5 @@
 import enum
+from dataclasses import dataclass
 
 MAX_UNSIGNED_VALUE = 2 ** 8
 
@@ -8,6 +9,27 @@ class AddressingMode(enum.Enum):
     absolute = enum.auto()
     zero_page = enum.auto()
     accumulator = enum.auto()
+
+
+class StatusFlag(enum.Enum):
+    carry = enum.auto()
+    zero = enum.auto()
+    interrupt_disable = enum.auto()
+    decimal = enum.auto()
+    break_ = enum.auto()
+    overflow = enum.auto()
+    negative = enum.auto()
+
+
+@dataclass
+class StatusRegister:
+    carry: bool = False
+    zero: bool = False
+    interrupt_disable: bool = False
+    decimal: bool = False
+    break_: bool = False
+    overflow: bool = False
+    negative: bool = False
 
 
 class Cpu:
@@ -28,14 +50,8 @@ class Cpu:
         self.accumulator: int = 0  # 8 bit
         self.register_x: int = 0  # 8 bit
         self.register_y: int = 0  # 8 bit
-        self.processor_status_carry: bool = False
-        self.processor_status_zero: bool = False
-        self.processor_status_interrupt_disable: bool = False
-        self.processor_status_decimal_mode: bool = False
-        self.processor_status_break_command: bool = False
-        self.processor_status_overflow: bool = False
-        self.processor_status_negative: bool = False
-        self.memory: bytearray = bytearray()
+        self.status = StatusRegister()
+        self.memory = bytearray()
 
     def add_with_carry(self, addressing_mode: AddressingMode, data: int) -> None:
         """Add instruction
@@ -59,7 +75,7 @@ class Cpu:
         result = arg1 + value
 
         # If 9th bit is set, then there is carry. This only applies to unsigned arithmetic.
-        self.processor_status_carry = bool(result & 0x100)
+        self.status.carry = bool(result & 0x100)
 
         # Check for overflow (only applies to signed arithmetic).
         # Will only occur if arguments are the same sign (increased magnitude)
@@ -69,16 +85,16 @@ class Cpu:
 
         # If params are the same sign, addition will increase the magnitude of result and with same sign If the sign
         # bit of result is different, then there is overflow
-        self.processor_status_overflow = bool((arg1_sign_bit & value_sign_bit) ^ result_sign_bit)
+        self.status.overflow = bool((arg1_sign_bit & value_sign_bit) ^ result_sign_bit)
 
         # Check the MSB for negative value
-        self.processor_status_negative = bool(result & 0x80)
+        self.status.negative = bool(result & 0x80)
 
         # Result is only 8 bit, must modulo it to fit register
         self.accumulator = result % MAX_UNSIGNED_VALUE
 
         # Check if the entire register is zero. Or just use int comparison
-        self.processor_status_zero = self.accumulator == 0
+        self.status.zero = self.accumulator == 0
 
     def _add_with_carry_absolute(self, value: int) -> None:
         value = self.read_from_memory(value)
@@ -105,13 +121,13 @@ class Cpu:
         result = arg1 & value
 
         # Check the MSB for negative value
-        self.processor_status_negative = bool(result & 0x80)
+        self.status.negative = bool(result & 0x80)
 
         # Result is only 8 bit, must modulo it to fit register
         self.accumulator = result % MAX_UNSIGNED_VALUE
 
         # Check if the entire register is zero. Or just use int comparison
-        self.processor_status_zero = self.accumulator == 0
+        self.status.zero = self.accumulator == 0
 
     def _and_absolute(self, value: int) -> None:
         value = self.read_from_memory(value)
@@ -133,17 +149,42 @@ class Cpu:
         result = arg << 1
 
         # Check the previous MSB for carry value
-        self.processor_status_carry = bool(result & 0x100)
+        self.status.carry = bool(result & 0x100)
 
         # Check the MSB for negative value
-        self.processor_status_negative = bool(result & 0x80)
+        self.status.negative = bool(result & 0x80)
 
         # Result is only 8 bit, must modulo it to fit register
         self.accumulator = result % MAX_UNSIGNED_VALUE
 
         # Check if the entire register is zero. Or just use int comparison
-        self.processor_status_zero = self.accumulator == 0
+        self.status.zero = self.accumulator == 0
 
     def branch_if_carry_clear(self, value: int) -> None:
-        if not self.processor_status_carry:
+        if not self.status.carry:
             self.program_counter += value
+
+    def clear_carry(self) -> None:
+        self._clear_flag(StatusFlag.carry)
+
+    def clear_decimal(self) -> None:
+        self._clear_flag(StatusFlag.decimal)
+
+    def clear_interrupt(self) -> None:
+        self._clear_flag(StatusFlag.interrupt_disable)
+
+    def clear_overflow(self) -> None:
+        self._clear_flag(StatusFlag.overflow)
+
+    def _clear_flag(self, flag: StatusFlag) -> None:
+        """Clear carry status flag."""
+        if flag == StatusFlag.carry:
+            self.status.carry = False
+        elif flag == StatusFlag.decimal:
+            self.status.decimal = False
+        elif flag == StatusFlag.interrupt_disable:
+            self.status.interrupt_disable = False
+        elif flag == StatusFlag.overflow:
+            self.status.overflow = False
+        else:
+            raise NotImplementedError(f'{flag} mode is not supported')
