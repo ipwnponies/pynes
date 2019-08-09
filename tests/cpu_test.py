@@ -392,3 +392,21 @@ class TestClear:
         with mock.patch.object(test_cpu, '_clear_flag') as clear_flag:
             test_cpu.clear_carry()
         assert clear_flag.called_with(cpu.StatusFlag.carry)
+
+    def test_clear_decimal(self):
+        test_cpu = cpu.Cpu()
+        with mock.patch.object(test_cpu, '_clear_flag') as clear_flag:
+            test_cpu.clear_decimal()
+        assert clear_flag.called_with(cpu.StatusFlag.decimal)
+
+    def test_clear_interrupt(self):
+        test_cpu = cpu.Cpu()
+        with mock.patch.object(test_cpu, '_clear_flag') as clear_flag:
+            test_cpu.clear_interrupt()
+        assert clear_flag.called_with(cpu.StatusFlag.interrupt_disable)
+
+    def test_clear_overflow(self):
+        test_cpu = cpu.Cpu()
+        with mock.patch.object(test_cpu, '_clear_flag') as clear_flag:
+            test_cpu.clear_overflow()
+        assert clear_flag.called_with(cpu.StatusFlag.overflow)

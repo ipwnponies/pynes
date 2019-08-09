@@ -167,6 +167,15 @@ class Cpu:
     def clear_carry(self) -> None:
         self._clear_flag(StatusFlag.carry)
 
+    def clear_decimal(self) -> None:
+        self._clear_flag(StatusFlag.decimal)
+
+    def clear_interrupt(self) -> None:
+        self._clear_flag(StatusFlag.interrupt_disable)
+
+    def clear_overflow(self) -> None:
+        self._clear_flag(StatusFlag.overflow)
+
     def _clear_flag(self, flag: StatusFlag) -> None:
         """Clear carry status flag."""
         if flag == StatusFlag.carry:
