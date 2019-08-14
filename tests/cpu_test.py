@@ -493,3 +493,53 @@ class TestClear:
         with mock.patch.object(test_cpu, '_clear_flag') as clear_flag:
             test_cpu.clear_overflow()
         assert clear_flag.called_with(cpu.StatusFlag.overflow)
+
+
+class TestBranchIfCarrySet:
+    """These feels identical to TestBranchIfCarryClear, may be refactored away"""
+
+    @staticmethod
+    def test():
+        test_cpu = cpu.Cpu()
+        test_cpu.program_counter = 100
+        test_cpu.status.carry = True
+
+        test_cpu.branch_if_carry_set(10)
+
+        assert test_cpu.program_counter == 110
+
+    @staticmethod
+    def test_carry_clear():
+        test_cpu = cpu.Cpu()
+        test_cpu.program_counter = 100
+        test_cpu.status.carry = False
+
+        test_cpu.branch_if_carry_set(10)
+
+        assert test_cpu.program_counter == 100
+
+    @staticmethod
+    @pytest.mark.parametrize('carry_state', [True, False])
+    @pytest.mark.parametrize('flag_state', [True, False])
+    def test_unaffected_flag(carry_state, flag_state):
+        """Test that other flags are unchanged."""
+        test_cpu = cpu.Cpu()
+        test_cpu.program_counter = 100
+        test_cpu.status.carry = carry_state
+
+        test_cpu.status.zero = flag_state
+        test_cpu.status.interrupt_disable = flag_state
+        test_cpu.status.decimal = flag_state
+        test_cpu.status.break_ = flag_state
+        test_cpu.status.overflow = flag_state
+        test_cpu.status.negative = flag_state
+
+        test_cpu.branch_if_carry_set(10)
+
+        assert test_cpu.status.carry == carry_state
+        assert test_cpu.status.zero == flag_state
+        assert test_cpu.status.interrupt_disable == flag_state
+        assert test_cpu.status.decimal == flag_state
+        assert test_cpu.status.break_ == flag_state
+        assert test_cpu.status.overflow == flag_state
+        assert test_cpu.status.negative == flag_state

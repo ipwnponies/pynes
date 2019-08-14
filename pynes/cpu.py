@@ -161,7 +161,15 @@ class Cpu:
         self.status.zero = self.accumulator == 0
 
     def branch_if_carry_clear(self, value: int) -> None:
-        if not self.status.carry:
+        """BCC instruction"""
+        self._branch_if_carry(False, value)
+
+    def branch_if_carry_set(self, value: int) -> None:
+        """BCS instruction"""
+        self._branch_if_carry(True, value)
+
+    def _branch_if_carry(self, should_branch: bool, value: int) -> None:
+        if self.status.carry == should_branch:
             self.program_counter += value
 
     def bit(self, value: int) -> None:
