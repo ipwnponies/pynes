@@ -411,6 +411,15 @@ class TestBranch:
 
         branch.assert_called_with(not overflow_flag, 10)
 
+    @pytest.mark.parametrize('overflow_flag', [True, False])
+    def test_branch_if_overflow_set(self, test_cpu, branch, overflow_flag):
+        """Branch if overflow flag is set."""
+        test_cpu.status.overflow = overflow_flag
+
+        test_cpu.branch_if_overflow_set(10)
+
+        branch.assert_called_with(overflow_flag, 10)
+
 
 class TestBit:
     @named_parametrize(

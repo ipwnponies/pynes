@@ -188,6 +188,10 @@ class Cpu:
         """BVC instruction"""
         self._branch(not self.status.overflow, value)
 
+    def branch_if_overflow_set(self, value: int) -> None:
+        """BVS instruction"""
+        self._branch(self.status.overflow, value)
+
     def _branch(self, predicate_for_branch: bool, value: int) -> None:
         if predicate_for_branch:
             self.program_counter += value
