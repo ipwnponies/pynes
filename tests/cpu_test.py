@@ -375,6 +375,15 @@ class TestBranch:
 
         branch.assert_called_with(zero_flag, 10)
 
+    @pytest.mark.parametrize('negative_flag', [True, False])
+    def test_branch_if_minus(self, test_cpu, branch, negative_flag):
+        """Branch if negative flag is set."""
+        test_cpu.status.negative = negative_flag
+
+        test_cpu.branch_if_minus(10)
+
+        branch.assert_called_with(negative_flag, 10)
+
 
 class TestBit:
     @named_parametrize(
