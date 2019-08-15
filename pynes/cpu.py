@@ -176,6 +176,10 @@ class Cpu:
         """BMI instruction"""
         self._branch(self.status.negative, value)
 
+    def branch_if_not_equal(self, value: int) -> None:
+        """BNE instruction"""
+        self._branch(not self.status.zero, value)
+
     def _branch(self, predicate_for_branch: bool, value: int) -> None:
         if predicate_for_branch:
             self.program_counter += value
