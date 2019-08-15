@@ -180,6 +180,10 @@ class Cpu:
         """BNE instruction"""
         self._branch(not self.status.zero, value)
 
+    def branch_if_positive(self, value: int) -> None:
+        """BPL instruction"""
+        self._branch(not self.status.negative, value)
+
     def _branch(self, predicate_for_branch: bool, value: int) -> None:
         if predicate_for_branch:
             self.program_counter += value
