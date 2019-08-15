@@ -161,7 +161,39 @@ class Cpu:
         self.status.zero = self.accumulator == 0
 
     def branch_if_carry_clear(self, value: int) -> None:
-        if not self.status.carry:
+        """BCC instruction"""
+        self._branch(not self.status.carry, value)
+
+    def branch_if_carry_set(self, value: int) -> None:
+        """BCS instruction"""
+        self._branch(self.status.carry, value)
+
+    def branch_if_equal(self, value: int) -> None:
+        """BEQ instruction"""
+        self._branch(self.status.zero, value)
+
+    def branch_if_minus(self, value: int) -> None:
+        """BMI instruction"""
+        self._branch(self.status.negative, value)
+
+    def branch_if_not_equal(self, value: int) -> None:
+        """BNE instruction"""
+        self._branch(not self.status.zero, value)
+
+    def branch_if_positive(self, value: int) -> None:
+        """BPL instruction"""
+        self._branch(not self.status.negative, value)
+
+    def branch_if_overflow_clear(self, value: int) -> None:
+        """BVC instruction"""
+        self._branch(not self.status.overflow, value)
+
+    def branch_if_overflow_set(self, value: int) -> None:
+        """BVS instruction"""
+        self._branch(self.status.overflow, value)
+
+    def _branch(self, predicate_for_branch: bool, value: int) -> None:
+        if predicate_for_branch:
             self.program_counter += value
 
     def bit(self, value: int) -> None:
