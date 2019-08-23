@@ -233,3 +233,14 @@ class Cpu:
             self.status.overflow = False
         else:
             raise NotImplementedError(f'{flag} mode is not supported')
+
+    def compare(self, value: int) -> None:
+        """Compare accumulator against memory value."""
+        arg1 = self.accumulator
+        arg2 = self.read_from_memory(value)
+
+        result = arg1 - arg2
+
+        self.status.carry = result > 0
+        self.status.zero = result == 0
+        self.status.negative = result < 0

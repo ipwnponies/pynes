@@ -569,3 +569,38 @@ class TestClear:
         with mock.patch.object(test_cpu, '_clear_flag') as clear_flag:
             test_cpu.clear_overflow()
         assert clear_flag.called_with(cpu.StatusFlag.overflow)
+
+
+class TestCompare:
+    def test_negative(self):
+        test_cpu = cpu.Cpu()
+        test_cpu.memory = bytearray(b'\x00\x00\x05\x00')
+        test_cpu.accumulator = 1
+
+        test_cpu.compare(2)
+
+        assert not test_cpu.status.carry
+        assert not test_cpu.status.zero
+        assert test_cpu.status.negative
+
+    def test_zero(self):
+        test_cpu = cpu.Cpu()
+        test_cpu.memory = bytearray(b'\x00\x00\x05\x00')
+        test_cpu.accumulator = 5
+
+        test_cpu.compare(2)
+
+        assert not test_cpu.status.carry
+        assert test_cpu.status.zero
+        assert not test_cpu.status.negative
+
+    def test_carry(self):
+        test_cpu = cpu.Cpu()
+        test_cpu.memory = bytearray(b'\x00\x00\x05\x00')
+        test_cpu.accumulator = 10
+
+        test_cpu.compare(2)
+
+        assert test_cpu.status.carry
+        assert not test_cpu.status.zero
+        assert not test_cpu.status.negative
