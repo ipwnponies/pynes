@@ -240,6 +240,9 @@ class Cpu:
     def cpx(self, value: int) -> None:
         self._compare(self.register_x, value)
 
+    def cpy(self, value: int) -> None:
+        self._compare(self.register_y, value)
+
     def _compare(self, arg1: int, value: int) -> None:
         """Compare accumulator against memory value."""
         arg2 = self.read_from_memory(value)

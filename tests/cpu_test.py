@@ -613,3 +613,10 @@ class TestCompare:
         with mock.patch.object(cpu.Cpu, '_compare') as compare:
             test_cpu.cpx(2)
         compare.assert_called_with(mock.sentinel.register_x, 2)
+
+    def test_cpy(self, test_cpu):
+        test_cpu.register_y = mock.sentinel.register_y
+
+        with mock.patch.object(cpu.Cpu, '_compare') as compare:
+            test_cpu.cpy(2)
+        compare.assert_called_with(mock.sentinel.register_y, 2)
