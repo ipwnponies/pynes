@@ -233,3 +233,22 @@ class Cpu:
             self.status.overflow = False
         else:
             raise NotImplementedError(f'{flag} mode is not supported')
+
+    def cmp(self, value: int) -> None:
+        self._compare(self.accumulator, value)
+
+    def cpx(self, value: int) -> None:
+        self._compare(self.register_x, value)
+
+    def cpy(self, value: int) -> None:
+        self._compare(self.register_y, value)
+
+    def _compare(self, arg1: int, value: int) -> None:
+        """Compare accumulator against memory value."""
+        arg2 = self.read_from_memory(value)
+
+        result = arg1 - arg2
+
+        self.status.carry = result > 0
+        self.status.zero = result == 0
+        self.status.negative = result < 0

@@ -119,7 +119,7 @@ class TestAddWithCarryImmediate:
         with mock.patch.object(test_cpu, '_add_with_carry_immediate') as mock_add:
             test_cpu.add_with_carry(cpu.AddressingMode.absolute, 2)
 
-        assert mock_add.called_with(5), 'Memory is not accessed in the right place.'
+        mock_add.assert_called_with(5), 'Memory is not accessed in the right place.'
 
     def test_zero_page(self):
         """Test that zero page addressing is alias for absolute addressing."""
@@ -152,7 +152,7 @@ class TestAnd:
         with mock.patch.object(test_cpu, '_and_immediate') as mock_and:
             test_cpu._and(cpu.AddressingMode.absolute, 2)
 
-        assert mock_and.called_with(5), 'Memory is not accessed in the right place.'
+        mock_and.assert_called_with(5), 'Memory is not accessed in the right place.'
 
     @named_parametrize(
         ('accumulator_state', 'immediate', 'expected'),
@@ -550,22 +550,73 @@ class TestClear:
         test_cpu = cpu.Cpu()
         with mock.patch.object(test_cpu, '_clear_flag') as clear_flag:
             test_cpu.clear_carry()
-        assert clear_flag.called_with(cpu.StatusFlag.carry)
+        clear_flag.assert_called_with(cpu.StatusFlag.carry)
 
     def test_clear_decimal(self):
         test_cpu = cpu.Cpu()
         with mock.patch.object(test_cpu, '_clear_flag') as clear_flag:
             test_cpu.clear_decimal()
-        assert clear_flag.called_with(cpu.StatusFlag.decimal)
+        clear_flag.assert_called_with(cpu.StatusFlag.decimal)
 
     def test_clear_interrupt(self):
         test_cpu = cpu.Cpu()
         with mock.patch.object(test_cpu, '_clear_flag') as clear_flag:
             test_cpu.clear_interrupt()
-        assert clear_flag.called_with(cpu.StatusFlag.interrupt_disable)
+        clear_flag.assert_called_with(cpu.StatusFlag.interrupt_disable)
 
     def test_clear_overflow(self):
         test_cpu = cpu.Cpu()
         with mock.patch.object(test_cpu, '_clear_flag') as clear_flag:
             test_cpu.clear_overflow()
-        assert clear_flag.called_with(cpu.StatusFlag.overflow)
+        clear_flag.assert_called_with(cpu.StatusFlag.overflow)
+
+
+class TestCompare:
+    @pytest.fixture(autouse=True)
+    def test_cpu(self):
+        test_cpu = cpu.Cpu()
+        test_cpu.memory = bytearray(b'\x00\x00\x05\x00')
+
+        yield test_cpu
+
+    def test_negative(self, test_cpu):
+        test_cpu._compare(1, 2)
+
+        assert not test_cpu.status.carry
+        assert not test_cpu.status.zero
+        assert test_cpu.status.negative
+
+    def test_zero(self, test_cpu):
+        test_cpu._compare(5, 2)
+
+        assert not test_cpu.status.carry
+        assert test_cpu.status.zero
+        assert not test_cpu.status.negative
+
+    def test_carry(self, test_cpu):
+        test_cpu._compare(10, 2)
+
+        assert test_cpu.status.carry
+        assert not test_cpu.status.zero
+        assert not test_cpu.status.negative
+
+    def test_cmp(self, test_cpu):
+        test_cpu.accumulator = mock.sentinel.accumulator
+
+        with mock.patch.object(cpu.Cpu, '_compare') as compare:
+            test_cpu.cmp(2)
+        compare.assert_called_with(mock.sentinel.accumulator, 2)
+
+    def test_cpx(self, test_cpu):
+        test_cpu.register_x = mock.sentinel.register_x
+
+        with mock.patch.object(cpu.Cpu, '_compare') as compare:
+            test_cpu.cpx(2)
+        compare.assert_called_with(mock.sentinel.register_x, 2)
+
+    def test_cpy(self, test_cpu):
+        test_cpu.register_y = mock.sentinel.register_y
+
+        with mock.patch.object(cpu.Cpu, '_compare') as compare:
+            test_cpu.cpy(2)
+        compare.assert_called_with(mock.sentinel.register_y, 2)
