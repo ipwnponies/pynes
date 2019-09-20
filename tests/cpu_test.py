@@ -4,131 +4,23 @@ from unittest import mock
 import pytest
 
 from pynes import cpu
+from pynes.instructions import add
 from testing.util import named_parametrize
 
 
-class TestAddWithCarryImmediate:
-    @named_parametrize(
-        ('accumulator_state', 'immediate', 'expected'),
-        [
-            ('Immediate value', 0, 10, 10),
-            ('Accumulator set', 5, 0, 5),
-            ('Accumulator set and immediate value', 5, 10, 15),
-            ('Upper bound test', 200, 55, 255),
-        ],
-    )
-    def test_adding(self, accumulator_state, immediate, expected):
-        """Test basic adding functionality between accumulator and immediate value."""
-        test_cpu = cpu.Cpu()
-        test_cpu.accumulator = accumulator_state
-        test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
+class TestDecodeInstruction:
+    """decode_instruction is currently a stub."""
 
-        assert test_cpu.accumulator == expected
-        assert not test_cpu.status.carry
+    def test_not_placeholder(self):
+        cpu_instance = cpu.Cpu()
+        cpu_instance.decode_instruction('NOT_PLACEHOLDER')
 
-    @named_parametrize(
-        ('accumulator_state', 'immediate', 'expected'),
-        [
-            ('Carry and overflow', 0xF0, 0xF0, True),
-            ('Carry but no overflow', 0xFF, 0xFF, True),
-            ('No carry or overflow', 0x0F, 0x0F, False),
-            ('No carry but has overflow', 0b1000000, 0b1000000, False),
-        ],
-    )
-    def test_carry(self, accumulator_state, immediate, expected):
-        """Test that carry bit is set when add operation overflows."""
-        test_cpu = cpu.Cpu()
-        test_cpu.accumulator = accumulator_state
-        test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
+    def test_placeholder(self):
+        cpu_instance = cpu.Cpu()
+        cpu_instance.decode_instruction('PLACEHOLDER')
 
-        assert test_cpu.status.carry == expected
 
-    @named_parametrize(
-        ('accumulator_state', 'immediate', 'expected'),
-        [
-            ('Carry and overflow', 0b10000000, 0b10000000, True),
-            ('Carry but no overflow', 0xFF, 0xFF, False),
-            ('No carry or overflow', 0x01, 0x01, False),
-            ('No carry but has overflow', 0b01000000, 0b01000000, True),
-        ],
-    )
-    def test_overflow(self, accumulator_state, immediate, expected):
-        """Test that overflow bit is set when add operation overflows.
-
-        This is only meaningful if the inputs were intended to be signed values."""
-        test_cpu = cpu.Cpu()
-        test_cpu.accumulator = accumulator_state
-
-        test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
-
-        assert test_cpu.status.overflow == expected
-
-    @named_parametrize(
-        ('accumulator_state', 'immediate'), [('All zero values', 0, 0), ('Result is 256 (overflow)', 200, 56)]
-    )
-    def test_zero_flag(self, accumulator_state, immediate):
-        """Test that result is zero."""
-        assert (
-            accumulator_state + immediate
-        ) % cpu.MAX_UNSIGNED_VALUE == 0, 'Test code assertion, test inputs must only for result == 0'
-
-        test_cpu = cpu.Cpu()
-        test_cpu.accumulator = accumulator_state
-        test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
-
-        assert test_cpu.status.zero
-
-    @named_parametrize(
-        ('accumulator_state', 'immediate', 'expected'),
-        [('Zero', 0, 0, False), ('Postive', 1, 1, False), ('Negative', 0xFF, 0xFF, True)],
-    )
-    def test_negative_flag(self, accumulator_state, immediate, expected):
-        """Test that negative bit is set if the result is negative."""
-        test_cpu = cpu.Cpu()
-        test_cpu.accumulator = accumulator_state
-
-        test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
-
-        assert test_cpu.status.negative == expected
-
-    @named_parametrize(
-        ('accumulator_state', 'immediate'),
-        [('Postiive values', 100, 100), ('Positive overflow', 200, 200), ('Zero', 0, 0)],
-    )
-    @pytest.mark.parametrize('flag_state', [True, False])
-    def test_unaffected_flag(self, accumulator_state, immediate, flag_state):
-        """Test that other flags are unchanged."""
-        test_cpu = cpu.Cpu()
-        test_cpu.accumulator = accumulator_state
-
-        test_cpu.status.interrupt_disable = flag_state
-        test_cpu.status.decimal = flag_state
-        test_cpu.status.break_ = flag_state
-
-        test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
-
-        assert test_cpu.status.interrupt_disable == flag_state
-        assert test_cpu.status.decimal == flag_state
-        assert test_cpu.status.break_ == flag_state
-
-    def test_absolute(self):
-        """Test that absolute addressing gets the value from memory, then performs same addition as immediate."""
-        test_cpu = cpu.Cpu()
-        test_cpu.memory = bytearray(b'\x00\x00\x05\x00')
-
-        with mock.patch.object(test_cpu, '_add_with_carry_immediate') as mock_add:
-            test_cpu.add_with_carry(cpu.AddressingMode.absolute, 2)
-
-        mock_add.assert_called_with(5), 'Memory is not accessed in the right place.'
-
-    def test_zero_page(self):
-        """Test that zero page addressing is alias for absolute addressing."""
-        test_cpu = cpu.Cpu()
-
-        with mock.patch.object(test_cpu, '_add_with_carry_absolute') as mock_add:
-            test_cpu.add_with_carry(cpu.AddressingMode.zero_page, 2)
-
-        assert mock_add.called, 'zero_page addressing mode should be identical to absolute mode'
+# TODO: Move all the following opcode test cases to separate modules
 
 
 class TestAnd:
@@ -180,7 +72,7 @@ class TestAnd:
         test_cpu = cpu.Cpu()
         test_cpu.accumulator = accumulator_state
 
-        test_cpu.add_with_carry(cpu.AddressingMode.immediate, immediate)
+        add.add_with_carry(test_cpu, cpu.AddressingMode.immediate, immediate)
 
         assert test_cpu.status.negative == expected
 
