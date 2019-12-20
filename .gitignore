@@ -9,5 +9,7 @@ __pycache__/
 /.testmondata
 /.tmontmp
 
+/coverage-html/
+/mypy-html/
 /venv/
 /.mypy_cache/

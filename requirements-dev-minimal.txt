@@ -1,6 +1,8 @@
 black
 coverage
 flake8
+# For coverage and mypy reporting
+lxml
 mypy
 pre-commit
 pylint
