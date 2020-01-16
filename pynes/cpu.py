@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from pynes.addressing_mode import AddressingMode
 from pynes.instructions import add
+from pynes.instructions import and_
 
 MAX_UNSIGNED_VALUE = 2 ** 8
 
@@ -55,39 +56,13 @@ class Cpu:
             addressing_mode = AddressingMode.immediate
             data = 0x0
             add.add_with_carry(self, addressing_mode, data)
+        elif opcode == 'PLACEHOLDER for and':
+            addressing_mode = AddressingMode.immediate
+            data = 0x0
+            and_.and_(self, addressing_mode, data)
 
     def read_from_memory(self, address: int) -> int:
         return self.memory[address]
-
-    def _and(self, addressing_mode: AddressingMode, value: int) -> None:
-        if addressing_mode == AddressingMode.immediate:
-            self._and_immediate(value)
-        elif addressing_mode == AddressingMode.absolute:
-            self._and_absolute(value)
-        elif addressing_mode == AddressingMode.zero_page:
-            # If you only specify the last byte of address, this automagically becomes equivalent to absolute
-            # Adding here for completeness but this is very much a hardware optimization, that looks non-functional
-            # in python.
-            self._and_absolute(value)
-        else:
-            raise NotImplementedError()
-
-    def _and_immediate(self, value: int) -> None:
-        arg1 = self.accumulator
-        result = arg1 & value
-
-        # Check the MSB for negative value
-        self.status.negative = bool(result & 0x80)
-
-        # Result is only 8 bit, must modulo it to fit register
-        self.accumulator = result % MAX_UNSIGNED_VALUE
-
-        # Check if the entire register is zero. Or just use int comparison
-        self.status.zero = self.accumulator == 0
-
-    def _and_absolute(self, value: int) -> None:
-        value = self.read_from_memory(value)
-        return self._and_immediate(value)
 
     def asl(self, addressing_mode: AddressingMode) -> None:
         """Arithmetic shift left
