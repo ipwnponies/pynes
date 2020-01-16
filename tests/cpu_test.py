@@ -12,11 +12,11 @@ class TestDecodeInstruction:
 
     def test_not_placeholder(self):
         cpu_instance = cpu.Cpu()
-        cpu_instance.decode_instruction('NOT_PLACEHOLDER')
+        cpu_instance.decode_instruction('NOT_PLACEHOLDER')  # type: ignore
 
     def test_placeholder(self):
         cpu_instance = cpu.Cpu()
-        cpu_instance.decode_instruction('PLACEHOLDER')
+        cpu_instance.decode_instruction('PLACEHOLDER')  # type: ignore
 
 
 # TODO: Move all the following opcode test cases to separate modules
