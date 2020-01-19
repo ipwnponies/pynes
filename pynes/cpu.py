@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pynes.addressing_mode import AddressingMode
 from pynes.instructions import add
 from pynes.instructions import and_
+from pynes.instructions import asl
 
 MAX_UNSIGNED_VALUE = 2 ** 8
 
@@ -60,36 +61,13 @@ class Cpu:
             addressing_mode = AddressingMode.immediate
             data = 0x0
             and_.and_(self, addressing_mode, data)
+        elif opcode == 'PLACEHOLDER for asl':
+            addressing_mode = AddressingMode.immediate
+            data = 0x0
+            asl.asl(self, addressing_mode)
 
     def read_from_memory(self, address: int) -> int:
         return self.memory[address]
-
-    def asl(self, addressing_mode: AddressingMode) -> None:
-        """Arithmetic shift left
-
-        0 is shifted into LSB and MSB is shifted into carry flag.
-        """
-        if addressing_mode == AddressingMode.accumulator:
-            self._asl_accumulator()
-        else:
-            raise NotImplementedError()
-
-    def _asl_accumulator(self) -> None:
-        """ASL accumulator"""
-        arg = self.accumulator
-        result = arg << 1
-
-        # Check the previous MSB for carry value
-        self.status.carry = bool(result & 0x100)
-
-        # Check the MSB for negative value
-        self.status.negative = bool(result & 0x80)
-
-        # Result is only 8 bit, must modulo it to fit register
-        self.accumulator = result % MAX_UNSIGNED_VALUE
-
-        # Check if the entire register is zero. Or just use int comparison
-        self.status.zero = self.accumulator == 0
 
     def branch_if_carry_clear(self, value: int) -> None:
         """BCC instruction"""
