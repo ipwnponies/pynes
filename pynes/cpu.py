@@ -73,19 +73,6 @@ class Cpu:
     def read_from_memory(self, address: int) -> int:
         return self.memory[address]
 
-    def bit(self, value: int) -> None:
-        """Bitmask operation
-
-        Bitmask pattern is located in accumulator and memory value is target.
-        This is really an AND operation, for bitmasking purposes."""
-        arg1 = self.accumulator
-        arg2 = self.read_from_memory(value)
-
-        # Set zero flag if bitmask masks everything
-        self.status.zero = not arg1 & arg2
-        self.status.negative = bool(1 << 7 & arg2)
-        self.status.overflow = bool(1 << 6 & arg2)
-
     def clear_carry(self) -> None:
         self._clear_flag(StatusFlag.carry)
 
