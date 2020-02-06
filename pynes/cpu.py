@@ -73,31 +73,6 @@ class Cpu:
     def read_from_memory(self, address: int) -> int:
         return self.memory[address]
 
-    def clear_carry(self) -> None:
-        self._clear_flag(StatusFlag.carry)
-
-    def clear_decimal(self) -> None:
-        self._clear_flag(StatusFlag.decimal)
-
-    def clear_interrupt(self) -> None:
-        self._clear_flag(StatusFlag.interrupt_disable)
-
-    def clear_overflow(self) -> None:
-        self._clear_flag(StatusFlag.overflow)
-
-    def _clear_flag(self, flag: StatusFlag) -> None:
-        """Clear carry status flag."""
-        if flag == StatusFlag.carry:
-            self.status.carry = False
-        elif flag == StatusFlag.decimal:
-            self.status.decimal = False
-        elif flag == StatusFlag.interrupt_disable:
-            self.status.interrupt_disable = False
-        elif flag == StatusFlag.overflow:
-            self.status.overflow = False
-        else:
-            raise NotImplementedError(f'{flag} mode is not supported')
-
     def cmp(self, value: int) -> None:
         self._compare(self.accumulator, value)
 
