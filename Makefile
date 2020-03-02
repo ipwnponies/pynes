@@ -17,7 +17,7 @@ venv:  ## Create virtualenv
 
 .PHONY: test
 test: venv ## Run script
-	venv/bin/mypy pynes/
+	venv/bin/mypy pynes/ tests/
 	venv/bin/check-requirements
 	venv/bin/coverage run -m pytest --strict tests/
 	venv/bin/coverage report --fail-under 100 --omit 'tests/*'
