@@ -6,6 +6,7 @@ from pynes.instructions import add
 from pynes.instructions import and_
 from pynes.instructions import asl
 from pynes.instructions import branch
+from pynes.instructions import cmp
 
 MAX_UNSIGNED_VALUE = 2 ** 8
 
@@ -69,25 +70,9 @@ class Cpu:
         elif opcode == 'PLACEHOLDER for branch':
             data = 0x0
             branch.branch_if_carry_clear(self, data)
+        elif opcode == 'PLACEHOLDER for cmp':
+            data = 0x0
+            cmp.cmp(self, data)
 
     def read_from_memory(self, address: int) -> int:
         return self.memory[address]
-
-    def cmp(self, value: int) -> None:
-        self._compare(self.accumulator, value)
-
-    def cpx(self, value: int) -> None:
-        self._compare(self.register_x, value)
-
-    def cpy(self, value: int) -> None:
-        self._compare(self.register_y, value)
-
-    def _compare(self, arg1: int, value: int) -> None:
-        """Compare accumulator against memory value."""
-        arg2 = self.read_from_memory(value)
-
-        result = arg1 - arg2
-
-        self.status.carry = result > 0
-        self.status.zero = result == 0
-        self.status.negative = result < 0
